@@ -1,6 +1,7 @@
 extern crate image;
 
 use image::GenericImageView;
+use image::DynamicImage;
 use std::io::Write;
 use std::env::args;
 
@@ -14,19 +15,30 @@ fn main() {
     }
 
     if image_path.len() == 0 {
-        writeln!(std::io::stderr(), "Usage rough-image image/path.jpg ...").unwrap();
+        writeln!(std::io::stderr(), "Usage: rough-image image/path.jpg ...").unwrap();
         std::process::exit(1);
     }
 
     for path in image_path {
-        let img = image::open(path).unwrap();
-        // The dimensions method returns the images width and height.
-        println!("dimensions {:?}", img.dimensions());
-
-        // The color method returns the image's `ColorType`.
-        println!("{:?}", img.color());
-
+        let img = image::open(&path).unwrap();
+        println!("path {:?}", &path);
+        display_img_info(&img);
+        display_pixels(&img);
         // Write the contents of this image to the Writer in PNG format.
         img.save("test.png").unwrap();
+    }
+}
+
+fn display_img_info(img: &DynamicImage ) {
+    println!("dimensions {:?}", img.dimensions());
+    println!("{:?}", img.color());
+}
+
+fn display_pixels(img: &DynamicImage ) {
+    let img_size = img.dimensions();
+    for x in 0..img_size.0 {
+        for y in 0..img_size.1 {
+            println!("{:?}", img.get_pixel(x, y) );
+        }
     }
 }
