@@ -1,8 +1,13 @@
 extern crate image;
+extern crate gif;
 
 use image::{GenericImageView, DynamicImage};
+use gif::{Frame, Encoder, Repeat, SetParameter};
 use std::io::Write;
 use std::env::args;
+use std::fs::File;
+use std::borrow::Cow;
+use std::vec::Vec;
 
 fn main() {
     // Use the open function to load an image from a Path.
@@ -25,7 +30,8 @@ fn main() {
         // display_pixels(&img);
         // Write the contents of this image to the Writer in PNG format.
         img.save("test.png").unwrap();
-        gen_rough_image(&img);
+        gen_red_image(&img);
+        gen_rgb_gif(&img);
     }
 }
 
@@ -44,7 +50,9 @@ fn display_img_info(img: &DynamicImage ) {
 //     }
 // }
 
-fn gen_rough_image(img: &DynamicImage) {
+
+
+fn gen_red_image(img: &DynamicImage) {
     let (imgx, imgy) = img.dimensions();
     // Create a new ImgBuf with width: imgx and height: imgy
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
@@ -59,4 +67,49 @@ fn gen_rough_image(img: &DynamicImage) {
     }
     // Save the image as “fractal.png”, the format is deduced from the path
     imgbuf.save("clone.png").unwrap();
+}
+
+fn gen_rgb_gif(img: &DynamicImage) {
+    let (imgx, imgy) = img.dimensions();
+    
+    let color_map = &[
+        0xFF, 0, 0,
+        0, 0xFF, 0,
+        0, 0, 0xFF,
+        0, 0, 0
+    ];
+    let width = imgx as u16;
+    let height = imgy as u16;
+
+    println!("{}, {}", width, height);
+    let mut gif_data = Vec::new();
+    let mut pixels = Vec::new();
+    for y in 0..imgy {
+        for x in 0..imgx {
+            let pixel = img.get_pixel(x, y);
+            if pixel[0] > pixel[1] && pixel[0] > pixel[2] {
+                pixels.push(0);
+            } else if pixel[1] > pixel[0] && pixel[1] > pixel[2] {
+                pixels.push(1);
+            } else if pixel[2] > pixel[0] && pixel[2] > pixel[1] {
+                pixels.push(2);
+            } else {
+                pixels.push(3);
+            }
+            // print!("{},{},{} -> ", pixel[0], pixel[1], pixel[2]);
+            // println!("{}", pixels[(x * y) as usize]);
+        }
+    }
+    assert_eq!(pixels.len(), (imgy * imgx) as usize);
+    gif_data.push(pixels);
+    let mut image = File::create("rgb.gif").unwrap();;
+    let mut encoder = Encoder::new(&mut image, width, height, color_map).unwrap();
+    encoder.set(Repeat::Infinite).unwrap();
+    for state in &gif_data {
+        let mut frame = Frame::default();
+        frame.width = width;
+        frame.height = height;
+        frame.buffer = Cow::Borrowed(&*state);
+        encoder.write_frame(&frame).unwrap();
+    }
 }
