@@ -80,10 +80,9 @@ fn gen_cube_image(img: &DynamicImage, boxsize: u32) {
             let mut red_total: u32 = 0;
             let mut green_total: u32 = 0;
             let mut blue_total: u32 = 0;
-            
-            for bx in 0..boxsize {
-                for by in 0..boxsize {
-                    let data = img.get_pixel(x + bx, y + by);
+            for ax in 0..boxsize {
+                for ay in 0..boxsize {
+                    let data = img.get_pixel(&x * &boxsize + &ax, &y * &boxsize + &ay);
                     red_total += data[0] as u32;
                     green_total += data[1] as u32;
                     blue_total += data[2] as u32;
@@ -92,8 +91,9 @@ fn gen_cube_image(img: &DynamicImage, boxsize: u32) {
             let avg_pix = image::Rgb([(red_total / boxsize) as u8, (green_total / boxsize) as u8, (blue_total / boxsize) as u8 ]);
             for bx in 0..boxsize {
                 for by in 0..boxsize {
-                    let pixel = imgbuf.get_pixel_mut(x + bx, y + by);
-                     *pixel = image::Rgb([avg_pix[0], avg_pix[1], avg_pix[2]]);
+                    let pixel = imgbuf.get_pixel_mut(&x * &boxsize + &bx, &y * &boxsize + &by);
+                    // println!("{}, {}", bx * x + bx, by * y + by);
+                    *pixel = avg_pix;
                 }
             }
         }
