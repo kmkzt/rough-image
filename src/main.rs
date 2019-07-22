@@ -74,6 +74,7 @@ fn gen_cube_image(img: &DynamicImage, boxsize: u32) {
     let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
     let loopx = imgx / boxsize;
     let loopy = imgy / boxsize;
+    let box_pixel_num = boxsize * boxsize;
     // A redundant loop to demonstrate reading image data
     for x in 0..loopx {
         for y in 0..loopy {
@@ -88,7 +89,7 @@ fn gen_cube_image(img: &DynamicImage, boxsize: u32) {
                     blue_total += data[2] as u32;
                 }
             }
-            let avg_pix = image::Rgb([(red_total / boxsize) as u8, (green_total / boxsize) as u8, (blue_total / boxsize) as u8 ]);
+            let avg_pix = image::Rgb([(red_total / box_pixel_num) as u8, (green_total / box_pixel_num) as u8, (blue_total / box_pixel_num) as u8 ]);
             for bx in 0..boxsize {
                 for by in 0..boxsize {
                     let pixel = imgbuf.get_pixel_mut(&x * &boxsize + &bx, &y * &boxsize + &by);
