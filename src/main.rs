@@ -32,6 +32,7 @@ fn main() {
         img.save("test.png").unwrap();
         gen_red_image(&img);
         gen_rgb_gif(&img);
+        gen_cube_image(&img, 10);
     }
 }
 
@@ -50,8 +51,6 @@ fn display_img_info(img: &DynamicImage ) {
 //     }
 // }
 
-
-
 fn gen_red_image(img: &DynamicImage) {
     let (imgx, imgy) = img.dimensions();
     // Create a new ImgBuf with width: imgx and height: imgy
@@ -67,6 +66,40 @@ fn gen_red_image(img: &DynamicImage) {
     }
     // Save the image as “fractal.png”, the format is deduced from the path
     imgbuf.save("clone.png").unwrap();
+}
+
+fn gen_cube_image(img: &DynamicImage, boxsize: u32) {
+    let (imgx, imgy) = img.dimensions();
+    // Create a new ImgBuf with width: imgx and height: imgy
+    let mut imgbuf = image::ImageBuffer::new(imgx, imgy);
+    let loopx = imgx / boxsize;
+    let loopy = imgy / boxsize;
+    // A redundant loop to demonstrate reading image data
+    for x in 0..loopx {
+        for y in 0..loopy {
+            let mut red_total: u32 = 0;
+            let mut green_total: u32 = 0;
+            let mut blue_total: u32 = 0;
+            
+            for bx in 0..boxsize {
+                for by in 0..boxsize {
+                    let data = img.get_pixel(x + bx, y + by);
+                    red_total += data[0] as u32;
+                    green_total += data[1] as u32;
+                    blue_total += data[2] as u32;
+                }
+            }
+            let avg_pix = image::Rgb([(red_total / boxsize) as u8, (green_total / boxsize) as u8, (blue_total / boxsize) as u8 ]);
+            for bx in 0..boxsize {
+                for by in 0..boxsize {
+                    let pixel = imgbuf.get_pixel_mut(x + bx, y + by);
+                     *pixel = image::Rgb([avg_pix[0], avg_pix[1], avg_pix[2]]);
+                }
+            }
+        }
+    }
+    // Save the image as “fractal.png”, the format is deduced from the path
+    imgbuf.save("cube.png").unwrap();
 }
 
 fn gen_rgb_gif(img: &DynamicImage) {
